@@ -1,10 +1,10 @@
 FROM alpine:3.14 as builder
-# RUN apk add --no-cache imagemagick libwebp-tools
 RUN apk add cmake pkgconfig brotli-dev \
   giflib-dev libjpeg-turbo-dev openexr-dev libpng-dev \
   libwebp-dev clang git make binutils libc-dev \
   build-base llvm-static llvm-dev clang-static clang-dev \
-  ninja nasm perl openssl-dev
+  ninja nasm perl openssl-dev bash && \
+  apk add --upgrade grep
 # RUN git clone https://chromium.googlesource.com/libyuv/libyuv
 # WORKDIR /libyuv
 # RUN mkdir build && cd build && cmake .. && make && make install
@@ -15,8 +15,9 @@ RUN git clone https://github.com/AOMediaCodec/libavif.git
 RUN git clone --single-branch https://chromium.googlesource.com/libyuv/libyuv
 RUN git clone -b v3.1.2 --depth 1 https://aomedia.googlesource.com/aom
 WORKDIR /libyuv/
-RUN mkdir build.libavif && cd build.libavif && \
-  cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_DOCS=0 \
+RUN export CC=/usr/bin/clang && export CXX=/usr/bin/clang++ && \
+  mkdir build.libavif && cd build.libavif && \
+  cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_DOCS=0 \
   -DENABLE_EXAMPLES=0 -DENABLE_TESTDATA=0 -DENABLE_TESTS=0 \
   -DENABLE_TOOLS=0 .. && \
   cmake --build . --config Release && \
